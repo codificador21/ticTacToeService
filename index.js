@@ -99,7 +99,35 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+  socket.on("restartGame", (roomId, callback) => {
+    const game = games[roomId];
+    if (game) {
+      // Reset the game state
+      game.board = Array(9).fill(null);
+      game.isXTurn = true;
+      game.winner = null;
+  
+      console.log(`Game ${roomId} restarted by ${socket.id}`);
+  
+      // Notify all players in the room of the reset game state
+      io.to(roomId).emit("updateGame", {
+        board: game.board,
+        isXTurn: game.isXTurn,
+        winner: game.winner,
+      });
+  
+      callback({ success: true });
+    } else {
+      console.log(`Attempted restart for non-existent game ${roomId} by ${socket.id}`);
+      callback({ success: false, message: "Game does not exist" });
+    }
+  });
 });
+
+// Handle game restart
+
+
 
 // Helper function to check for a winner
 function checkWinner(board) {
