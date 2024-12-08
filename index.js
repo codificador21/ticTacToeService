@@ -24,7 +24,10 @@ io.on("connection", (socket) => {
       isXTurn: true,
       players: [socket.id],
       winner: null,
-      queue: []
+      queue: [],
+      gameNumber: 0,
+      xWins:0,
+      oWins:0,
     };
     socket.join(roomId);
     console.log(`Game created with ID: ${roomId} by user: ${socket.id}`);
@@ -64,7 +67,8 @@ io.on("connection", (socket) => {
       }
       game.isXTurn = !game.isXTurn;
       game.winner = checkWinner(game.board);
-
+      game.winner == 'X' && games[roomId].xWins++;
+      game.winner == 'O' && games[roomId].oWins++;
       console.log(`Move made in game ${roomId} by ${socket.id}:`, game.board);
 
       // Notify all players in the room of the updated game state
@@ -112,9 +116,10 @@ io.on("connection", (socket) => {
     if (game) {
       // Reset the game state
       game.board = Array(9).fill(null);
-      game.isXTurn = true;
+      game.gameNumber++;
+      game.isXTurn = game.gameNumber%2==0;
       game.winner = null;
-  
+      game.queue = [];
       console.log(`Game ${roomId} restarted by ${socket.id}`);
   
       // Notify all players in the room of the reset game state
