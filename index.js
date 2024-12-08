@@ -24,6 +24,7 @@ io.on("connection", (socket) => {
       isXTurn: true,
       players: [socket.id],
       winner: null,
+      queue: []
     };
     socket.join(roomId);
     console.log(`Game created with ID: ${roomId} by user: ${socket.id}`);
@@ -54,7 +55,13 @@ io.on("connection", (socket) => {
     const game = games[roomId];
     if (game && game.board[index] === null && !game.winner) {
       const move = game.isXTurn ? "X" : "O";
-      game.board[index] = move;
+      if(game.queue.length===6) game.queue.shift();
+      game.queue[game.queue.length] = {move,index};
+      game.board = Array(9).fill(null);
+      for (let playedMoves of game.queue) {
+        const { move, index } = playedMoves;
+        game.board[index] = move;
+      }
       game.isXTurn = !game.isXTurn;
       game.winner = checkWinner(game.board);
 
